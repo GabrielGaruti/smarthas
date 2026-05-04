@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Smart HAS</string>
+    <string name="app_subtitle">Monitoramento de Pressão Arterial</string>
+
+    <!-- Splash Screen -->
+    <string name="splash_welcome">Bem-vindo ao Smart HAS</string>
+    <string name="splash_subtitle">Seu assistente de saúde</string>
+    <string name="splash_version">versão 1.0 - 2025</string>
+
+    <!-- Login -->
+    <string name="login_title">Login</string>
+    <string name="login_email_hint">seu@email.com</string>
+    <string name="login_password_hint">Senha</string>
+    <string name="login_button">Entrar</string>
+    <string name="login_forgot_password">Esqueceu a senha?</string>
+    <string name="login_register_text">Não tem conta?</string>
+    <string name="login_register_link">Cadastre-se</string>
+    <string name="login_error">Email ou senha inválidos</string>
+    <string name="login_success">Login realizado com sucesso</string>
+
+    <!-- Register -->
+    <string name="register_title">Criar Conta</string>
+    <string name="register_name_hint">Nome completo</string>
+    <string name="register_email_hint">seu@email.com</string>
+    <string name="register_password_hint">Senha</string>
+    <string name="register_password_confirm_hint">Confirmar senha</string>
+    <string name="register_button">Criar conta</string>
+    <string name="register_already_account">Já tem conta?</string>
+    <string name="register_login_link">Entre aqui</string>
+    <string name="register_password_mismatch">As senhas não correspondem</string>
+    <string name="register_success">Conta criada com sucesso!</string>
+    <string name="register_error">Erro ao criar conta</string>
+
+    <!-- Home / Dashboard -->
+    <string name="home_title">Home</string>
+    <string name="home_greeting">Olá, %s</string>
+    <string name="home_last_measurement">Última Medição</string>
+    <string name="home_no_measurements">Nenhuma medição registrada</string>
+    <string name="home_new_measurement_button">+ Nova Medição</string>
+    <string name="home_status">Status</string>
+    <string name="home_measurement_time">%s às %s</string>
+
+    <!-- New Measurement -->
+    <string name="measurement_title">Registrar Medição</string>
+    <string name="measurement_systolic_hint">Sistólica (ex: 120)</string>
+    <string name="measurement_diastolic_hint">Diastólica (ex: 80)</string>
+    <string name="measurement_notes_hint">Observações (opcional)</string>
+    <string name="measurement_save_button">Salvar Medição</string>
+    <string name="measurement_success">Medição salva com sucesso</string>
+    <string name="measurement_error">Erro ao salvar medição</string>
+    <string name="measurement_invalid_values">Valores inválidos</string>
+
+    <!-- History -->
+    <string name="history_title">Histórico</string>
+    <string name="history_empty">Nenhuma medição registrada</string>
+    <string name="history_filter">Filtro</string>
+    <string name="history_filter_all">Todas</string>
+    <string name="history_filter_normal">Normal</string>
+    <string name="history_filter_elevated">Elevada</string>
+    <string name="history_filter_hypertension">Hipertensão</string>
+
+    <!-- Status Badges -->
+    <string name="status_normal">Normal</string>
+    <string name="status_elevated">Elevada</string>
+    <string name="status_hypertension">Hipertensão</string>
+    <string name="status_description_normal">Pressão arterial normal</string>
+    <string name="status_description_elevated">Pressão arterial elevada</string>
+    <string name="status_description_hypertension">Pressão arterial elevada (Hipertensão)</string>
+
+    <!-- Credits -->
+    <string name="credits_title">Créditos</string>
+    <string name="credits_developer">Desenvolvedor</string>
+    <string name="credits_developer_name">Gabriel Garuti Paiva Cracco</string>
+    <string name="credits_rm">RM554866</string>
+    <string name="credits_institution">FIAP</string>
+    <string name="credits_project">Smart HAS</string>
+    <string name="credits_subtitle">Monitoramento de Pressão Arterial</string>
+    <string name="credits_version">Versão 1.0</string>
+    <string name="credits_year">2025</string>
+
+    <!-- Menu Items -->
+    <string name="menu_home">Home</string>
+    <string name="menu_new_measurement">Medição</string>
+    <string name="menu_history">Histórico</string>
+    <string name="menu_credits">Créditos</string>
+
+    <!-- Common -->
+    <string name="loading">Carregando...</string>
+    <string name="error">Erro</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancelar</string>
+    <string name="back">Voltar</string>
+    <string name="logout">Sair</string>
+    <string name="save">Salvar</string>
+    <string name="delete">Deletar</string>
+    <string name="edit">Editar</string>
+</resources>

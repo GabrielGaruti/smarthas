@@ -1,0 +1,38 @@
+[
+    {
+        "merged": "com.smarthas.app-mergeDebugResources-72:/layout/fragment_home.xml",
+        "source": "com.smarthas.app-main-75:/layout/fragment_home.xml"
+    },
+    {
+        "merged": "com.smarthas.app-mergeDebugResources-72:/layout/fragment_login.xml",
+        "source": "com.smarthas.app-main-75:/layout/fragment_login.xml"
+    },
+    {
+        "merged": "com.smarthas.app-mergeDebugResources-72:/layout/activity_main.xml",
+        "source": "com.smarthas.app-main-75:/layout/activity_main.xml"
+    },
+    {
+        "merged": "com.smarthas.app-mergeDebugResources-72:/layout/fragment_credits.xml",
+        "source": "com.smarthas.app-main-75:/layout/fragment_credits.xml"
+    },
+    {
+        "merged": "com.smarthas.app-mergeDebugResources-72:/layout/fragment_new_measurement.xml",
+        "source": "com.smarthas.app-main-75:/layout/fragment_new_measurement.xml"
+    },
+    {
+        "merged": "com.smarthas.app-mergeDebugResources-72:/layout/item_measurement.xml",
+        "source": "com.smarthas.app-main-75:/layout/item_measurement.xml"
+    },
+    {
+        "merged": "com.smarthas.app-mergeDebugResources-72:/layout/fragment_splash.xml",
+        "source": "com.smarthas.app-main-75:/layout/fragment_splash.xml"
+    },
+    {
+        "merged": "com.smarthas.app-mergeDebugResources-72:/layout/fragment_history.xml",
+        "source": "com.smarthas.app-main-75:/layout/fragment_history.xml"
+    },
+    {
+        "merged": "com.smarthas.app-mergeDebugResources-72:/layout/fragment_register.xml",
+        "source": "com.smarthas.app-main-75:/layout/fragment_register.xml"
+    }
+]
