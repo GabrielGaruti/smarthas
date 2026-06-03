@@ -1,8 +1,9 @@
 import os
+from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import Optional, List
 from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from sqlmodel import SQLModel, Field, Session, create_engine, select
@@ -127,7 +128,12 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
 # -------------------------
 # App
 # -------------------------
-app = FastAPI(title="SmartHAS API", version="1.0.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_db_and_tables()
+    yield
+
+app = FastAPI(title="SmartHAS API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -136,10 +142,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.on_event("startup")
-def on_startup():
-    create_db_and_tables()
 
 @app.get("/health")
 def health():
