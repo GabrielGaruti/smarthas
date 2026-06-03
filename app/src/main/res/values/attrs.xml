@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Corner Radius Attributes for Material Design 3 -->
-    <attr name="cornerRadiusSmall" format="dimension" />
-    <attr name="cornerRadiusMedium" format="dimension" />
-    <attr name="cornerRadiusLarge" format="dimension" />
-    <attr name="cornerRadiusExtraLarge" format="dimension" />
-</resources>
