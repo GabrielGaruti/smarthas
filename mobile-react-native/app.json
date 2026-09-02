@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "Smart HAS",
+    "slug": "smarthas-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#b91c1c"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": { "supportsTablet": true },
+    "android": {
+      "package": "com.smarthas.mobile"
+    },
+    "web": {}
+  }
+}

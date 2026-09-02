@@ -1,8 +1,0 @@
-uploads = []
-generated = []
-
-[[outputs]]
-id = "XU_NbhJxVqGA6r_2kGBdP"
-uri = "file://smart-has.zip"
-type = "unspecified"
-title = "Smart HAS — Projeto completo"
