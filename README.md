@@ -53,6 +53,4 @@ npx expo start
 ## Integrantes do grupo
 - Gabriel Garuti Paiva Cracco — RM 554866
 
-## Links
-- Repositório GitHub: _(inserir link)_
-- Vídeo de demonstração (YouTube, não listado): _(inserir link)_
+
