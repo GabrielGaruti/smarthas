@@ -38,13 +38,16 @@ import { ApiService, Measurement } from '../services/api.service';
           <button (click)="add()">Adicionar</button>
         </div>
         <p class="error" *ngIf="error">{{ error }}</p>
+        <p *ngIf="lastAlert" class="alert-box">
+          <b>Alerta {{ lastAlert.severity }}:</b> {{ lastAlert.message }}
+        </p>
       </div>
 
       <div class="card">
         <h2>Historico</h2>
         <table>
           <thead>
-            <tr><th>Pressao</th><th>Data</th><th>Hora</th><th>Classificacao</th><th>Notas</th><th></th></tr>
+            <tr><th>Pressao</th><th>Data</th><th>Hora</th><th>Classificacao</th><th>Origem</th><th>Notas</th><th></th></tr>
           </thead>
           <tbody>
             <tr *ngFor="let m of measurements">
@@ -52,11 +55,12 @@ import { ApiService, Measurement } from '../services/api.service';
               <td>{{ m.date }}</td>
               <td>{{ m.time }}</td>
               <td><span class="badge" [style.background]="m.colorHex">{{ m.classificationLabel }}</span></td>
+              <td>{{ m.source === 'SENSOR' ? 'Sensor IoT' : 'Manual' }}</td>
               <td>{{ m.notes }}</td>
               <td><button class="danger" (click)="remove(m.id)">Excluir</button></td>
             </tr>
             <tr *ngIf="measurements.length === 0">
-              <td colspan="6" style="color:#6b7280;">Nenhuma medicao registrada.</td>
+              <td colspan="7" style="color:#6b7280;">Nenhuma medicao registrada.</td>
             </tr>
           </tbody>
         </table>
@@ -67,6 +71,7 @@ import { ApiService, Measurement } from '../services/api.service';
 export class MeasurementsComponent implements OnInit {
   measurements: Measurement[] = [];
   error = '';
+  lastAlert: { severity: string; message: string } | null = null;
   form = {
     systolic: 120,
     diastolic: 80,
@@ -90,8 +95,15 @@ export class MeasurementsComponent implements OnInit {
 
   add(): void {
     this.error = '';
+    this.lastAlert = null;
     this.api.createMeasurement(this.form).subscribe({
-      next: () => this.load(),
+      next: (m) => {
+        // alerta gerado no back-end pela procedure PRC_SHAS_REGISTRAR_ALERTA
+        if (m.alertSeverity && m.alertMessage) {
+          this.lastAlert = { severity: m.alertSeverity, message: m.alertMessage };
+        }
+        this.load();
+      },
       error: (err: HttpErrorResponse) => (this.error = err.error?.detail ?? 'Erro ao salvar.'),
     });
   }

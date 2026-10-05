@@ -51,6 +51,8 @@ public class SecurityConfig {
                 // leitura das unidades e publica; escrita e ADMIN
                 .requestMatchers(HttpMethod.GET, "/units", "/units/**").permitAll()
                 .requestMatchers("/units", "/units/**").hasRole("ADMIN")
+                // rotas administrativas (relatorios, indicadores, alertas de todos)
+                .requestMatchers("/admin/**").hasRole("ADMIN")
                 // qualquer outra rota exige autenticacao
                 .anyRequest().authenticated()
             )
@@ -65,7 +67,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOriginPatterns(List.of("*"));   // dev: libera todas as origens
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

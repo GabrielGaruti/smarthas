@@ -3,6 +3,7 @@ package com.smarthas.api.web;
 import com.smarthas.api.dto.MeasurementRequest;
 import com.smarthas.api.dto.MeasurementResponse;
 import com.smarthas.api.security.AppUserDetails;
+import com.smarthas.api.service.AlertService;
 import com.smarthas.api.service.MeasurementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -21,9 +22,11 @@ import java.util.List;
 public class MeasurementController {
 
     private final MeasurementService service;
+    private final AlertService alertService;
 
-    public MeasurementController(MeasurementService service) {
+    public MeasurementController(MeasurementService service, AlertService alertService) {
         this.service = service;
+        this.alertService = alertService;
     }
 
     @Operation(summary = "Lista as medicoes do usuario")
@@ -40,12 +43,15 @@ public class MeasurementController {
         return MeasurementResponse.from(service.getOwned(id, principal.getUser()));
     }
 
-    @Operation(summary = "Cria uma nova medicao")
+    @Operation(summary = "Cria uma nova medicao",
+               description = "Apos gravar, o evento de back-end aciona a procedure PRC_SHAS_REGISTRAR_ALERTA. "
+                           + "Se a leitura gerar alerta, ele volta em alertSeverity/alertMessage.")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public MeasurementResponse create(@Valid @RequestBody MeasurementRequest request,
                                       @AuthenticationPrincipal AppUserDetails principal) {
-        return MeasurementResponse.from(service.create(request, principal.getUser()));
+        var saved = service.create(request, principal.getUser());
+        return MeasurementResponse.from(saved, alertService.findForMeasurement(saved.getId()).orElse(null));
     }
 
     @Operation(summary = "Atualiza uma medicao existente")
@@ -53,7 +59,8 @@ public class MeasurementController {
     public MeasurementResponse update(@PathVariable Long id,
                                       @Valid @RequestBody MeasurementRequest request,
                                       @AuthenticationPrincipal AppUserDetails principal) {
-        return MeasurementResponse.from(service.update(id, request, principal.getUser()));
+        var saved = service.update(id, request, principal.getUser());
+        return MeasurementResponse.from(saved, alertService.findForMeasurement(saved.getId()).orElse(null));
     }
 
     @Operation(summary = "Remove uma medicao")

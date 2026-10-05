@@ -25,3 +25,13 @@ th { background: #f9fafb; color: #6b7280; }
 .stat .lbl { color: #6b7280; font-size: 14px; }
 .rec-list li { margin: 6px 0; padding-left: 8px; }
 .login-wrap { max-width: 380px; margin: 60px auto; }
+
+/* ---------- Fase 6 ---------- */
+.alert-box { margin-top: 14px; padding: 12px 14px; border-radius: 8px; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.toolbar { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 12px; }
+.toolbar select, .toolbar input { width: auto; }
+.muted { color: #6b7280; font-size: 13px; }
+.sev-CRITICO { background: #7f1d1d; }
+.sev-ALTO { background: #dc2626; }
+.sev-MODERADO { background: #f59e0b; }
+.ok { color: #16a34a; }

@@ -67,6 +67,21 @@ export default function HomeScreen({ navigation }) {
         </View>
       )}
 
+      {rec && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Leituras na meta (30 dias)</Text>
+          <Text style={styles.rate}>
+            {rec.controlRate30d != null ? `${rec.controlRate30d.toFixed(1)}%` : '--'}
+          </Text>
+          {rec.patientSummary ? <Text style={styles.summary}>{rec.patientSummary}</Text> : null}
+          {rec.openAlerts > 0 && (
+            <Text style={styles.alertLink} onPress={() => navigation.navigate('Alertas')}>
+              {rec.openAlerts} alerta(s) em aberto - toque para ver
+            </Text>
+          )}
+        </View>
+      )}
+
       <View style={styles.actions}>
         <Button title="Nova medicao" color="#b91c1c" onPress={() => navigation.navigate('Nova')} />
       </View>
@@ -102,4 +117,7 @@ const styles = StyleSheet.create({
   risk: { fontSize: 24, fontWeight: 'bold', marginBottom: 8 },
   rec: { color: '#374151', marginTop: 4 },
   actions: { marginBottom: 10 },
+  rate: { fontSize: 32, fontWeight: 'bold', color: '#1f2937' },
+  summary: { color: '#4b5563', marginTop: 8, fontSize: 13 },
+  alertLink: { color: '#b91c1c', fontWeight: '600', marginTop: 10 },
 });

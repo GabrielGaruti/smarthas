@@ -13,6 +13,7 @@ import { AuthService } from './services/auth.service';
       <a routerLink="/dashboard">Dashboard</a>
       <a routerLink="/measurements">Medicoes</a>
       <a routerLink="/units">Unidades</a>
+      <a routerLink="/clinical" *ngIf="auth.isAdmin">Alertas &amp; Relatorios</a>
       <span>Ola, {{ auth.user?.fullName }}</span>
       <a href="javascript:void(0)" (click)="logout()">Sair</a>
     </nav>

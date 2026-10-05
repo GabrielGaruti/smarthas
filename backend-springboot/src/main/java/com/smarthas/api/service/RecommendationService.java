@@ -22,7 +22,9 @@ public class RecommendationService {
     public RecommendationResponse compute(User user,
                                           List<Measurement> measurements,
                                           List<HealthUnit> units,
-                                          double refLat, double refLng) {
+                                          double refLat, double refLng,
+                                          Double controlRate30d, String patientSummary,
+                                          long openAlerts, String rulesEngine) {
 
         int total = measurements.size();
         long normal = measurements.stream().filter(m -> m.getClassification() == Classification.NORMAL).count();
@@ -39,7 +41,7 @@ public class RecommendationService {
         if (total == 0) {
             riskLevel = "SEM DADOS";
             recs.add("Registre sua primeira medicao para receber recomendacoes personalizadas.");
-        } else if (recentHyper >= 3) {
+        } else if (recentHyper >= 3 || (controlRate30d != null && controlRate30d < 50)) {
             riskLevel = "ALTO";
             recs.add("Varias medicoes recentes indicam hipertensao. Procure um medico o quanto antes.");
             recs.add("Evite sal em excesso, cafeina e bebidas alcoolicas nas proximas 24h.");
@@ -53,6 +55,10 @@ public class RecommendationService {
             recs.add("Seu quadro esta estavel. Continue monitorando periodicamente.");
         }
 
+        if (openAlerts > 0) {
+            recs.add("Voce tem " + openAlerts + " alerta(s) em aberto. Consulte a aba de alertas.");
+        }
+
         HealthUnit nearest = findNearestActive(units, refLat, refLng);
         if (nearest != null && !"BAIXO".equals(riskLevel) && !"SEM DADOS".equals(riskLevel)) {
             recs.add("Unidade de saude mais proxima sugerida: " + nearest.getName() + ".");
@@ -60,7 +66,8 @@ public class RecommendationService {
 
         return new RecommendationResponse(
                 total, normal, elevated, hyper, riskLevel, recs,
-                nearest == null ? null : HealthUnitResponse.from(nearest)
+                nearest == null ? null : HealthUnitResponse.from(nearest),
+                controlRate30d, patientSummary, openAlerts, rulesEngine
         );
     }
 

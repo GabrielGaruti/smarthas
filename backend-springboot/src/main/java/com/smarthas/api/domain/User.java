@@ -3,29 +3,30 @@ package com.smarthas.api.domain;
 import jakarta.persistence.*;
 import java.time.Instant;
 
-/** Usuario do sistema (paciente ou administrador). */
+/** Usuario do sistema (paciente ou administrador). Tabela Oracle: T_SHAS_USUARIO. */
 @Entity
-@Table(name = "users")
+@Table(name = "T_SHAS_USUARIO")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ID_USUARIO")
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "NM_COMPLETO", nullable = false, length = 120)
     private String fullName;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "DS_EMAIL", nullable = false, unique = true, length = 150)
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "DS_SENHA_HASH", nullable = false, length = 100)
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "TP_PERFIL", nullable = false, length = 10)
     private Role role = Role.USER;
 
-    @Column(nullable = false, updatable = false)
+    @Column(name = "DT_CADASTRO", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
     public User() { }
