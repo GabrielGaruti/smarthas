@@ -50,4 +50,9 @@ export const api = {
   getUnits: () => request('/units', { auth: false }),
 
   getRecommendations: () => request('/recommendations'),
+
+  // Fase 6: alertas gerados pela procedure Oracle PRC_SHAS_REGISTRAR_ALERTA
+  getAlerts: () => request('/alerts'),
+
+  resolveAlert: (id) => request(`/alerts/${id}/resolve`, { method: 'PATCH' }),
 };

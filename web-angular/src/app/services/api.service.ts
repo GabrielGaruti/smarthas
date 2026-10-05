@@ -14,6 +14,10 @@ export interface Measurement {
   classification: string;
   classificationLabel: string;
   colorHex: string;
+  heartRate?: number;
+  source?: string;            // MANUAL | SENSOR
+  alertSeverity?: string;     // preenchido quando a procedure gera alerta
+  alertMessage?: string;
 }
 
 export interface HealthUnit {
@@ -34,6 +38,55 @@ export interface Recommendation {
   riskLevel: string;
   recommendations: string[];
   nearestUnit?: HealthUnit;
+  controlRate30d?: number | null;  // FN_SHAS_TAXA_CONTROLE
+  patientSummary?: string;         // FN_SHAS_RESUMO_PACIENTE
+  openAlerts: number;
+  rulesEngine: string;             // ORACLE_PLSQL | JAVA_FALLBACK
+}
+
+export interface ClinicalAlert {
+  id: number;
+  userId: number;
+  userName: string;
+  measurementId: number;
+  type: string;
+  severity: string;
+  message: string;
+  status: string;
+  createdAt: string;
+  resolvedAt?: string;
+}
+
+export interface SummaryReport {
+  id: number;
+  userId: number;
+  userName: string;
+  startDate: string;
+  endDate: string;
+  measurementCount: number;
+  avgSystolic?: number;
+  avgDiastolic?: number;
+  maxSystolic?: number;
+  controlRate?: number;
+  openAlerts: number;
+  riskLevel: string;
+  summary: string;
+  generatedAt: string;
+}
+
+export interface ReportRun {
+  engine: string;
+  days: number;
+  generated: number;
+  elapsedMs: number;
+  reports: SummaryReport[];
+}
+
+export interface PatientIndicator {
+  userId: number;
+  fullName: string;
+  controlRate?: number | null;
+  summary: string;
 }
 
 export interface LoginResponse {
@@ -83,5 +136,28 @@ export class ApiService {
 
   getRecommendations(): Observable<Recommendation> {
     return this.http.get<Recommendation>(`${this.base}/recommendations`);
+  }
+
+  // ---------- Fase 6: alertas, relatorios e indicadores (Oracle PL/SQL) ----------
+
+  getAllAlerts(status?: string): Observable<ClinicalAlert[]> {
+    const q = status ? `?status=${status}` : '';
+    return this.http.get<ClinicalAlert[]>(`${this.base}/admin/alerts${q}`);
+  }
+
+  resolveAlert(id: number): Observable<ClinicalAlert> {
+    return this.http.patch<ClinicalAlert>(`${this.base}/alerts/${id}/resolve`, {});
+  }
+
+  generateReports(days: number): Observable<ReportRun> {
+    return this.http.post<ReportRun>(`${this.base}/admin/reports/summary?days=${days}`, {});
+  }
+
+  getReports(): Observable<SummaryReport[]> {
+    return this.http.get<SummaryReport[]>(`${this.base}/admin/reports`);
+  }
+
+  getIndicators(days: number): Observable<PatientIndicator[]> {
+    return this.http.get<PatientIndicator[]>(`${this.base}/admin/patients/indicators?days=${days}`);
   }
 }

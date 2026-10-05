@@ -11,6 +11,7 @@ import HomeScreen from './src/screens/HomeScreen';
 import HistoryScreen from './src/screens/HistoryScreen';
 import AddMeasurementScreen from './src/screens/AddMeasurementScreen';
 import UnitsScreen from './src/screens/UnitsScreen';
+import AlertsScreen from './src/screens/AlertsScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -28,6 +29,7 @@ function AppTabs() {
       <Tab.Screen name="Inicio" component={HomeScreen} />
       <Tab.Screen name="Historico" component={HistoryScreen} />
       <Tab.Screen name="Nova" component={AddMeasurementScreen} options={{ title: 'Nova medicao' }} />
+      <Tab.Screen name="Alertas" component={AlertsScreen} />
       <Tab.Screen name="Unidades" component={UnitsScreen} />
     </Tab.Navigator>
   );

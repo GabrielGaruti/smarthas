@@ -3,6 +3,7 @@ import { LoginComponent } from './pages/login.component';
 import { DashboardComponent } from './pages/dashboard.component';
 import { MeasurementsComponent } from './pages/measurements.component';
 import { UnitsComponent } from './pages/units.component';
+import { ClinicalComponent } from './pages/clinical.component';
 
 /** Rotas simples de navegacao entre telas. */
 export const routes: Routes = [
@@ -11,5 +12,6 @@ export const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent },
   { path: 'measurements', component: MeasurementsComponent },
   { path: 'units', component: UnitsComponent },
+  { path: 'clinical', component: ClinicalComponent },
   { path: '**', redirectTo: 'login' },
 ];

@@ -4,31 +4,34 @@ import jakarta.persistence.*;
 
 /**
  * Ponto de interesse no mapa (camada "AI Logistics Extension"):
- * hospital, sensor IoT ou unidade de atendimento.
+ * hospital, sensor IoT ou unidade de atendimento. Tabela Oracle: T_SHAS_UNIDADE_SAUDE.
  */
 @Entity
-@Table(name = "health_units")
+@Table(name = "T_SHAS_UNIDADE_SAUDE")
 public class HealthUnit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ID_UNIDADE")
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "NM_UNIDADE", nullable = false, length = 120)
     private String name;
 
-    @Column(nullable = false)
+    @Column(name = "TP_UNIDADE", nullable = false, length = 10)
     private String type;    // HOSPITAL, SENSOR, CLINIC
 
-    @Column(nullable = false)
+    @Column(name = "VL_LATITUDE", nullable = false)
     private double latitude;
 
-    @Column(nullable = false)
+    @Column(name = "VL_LONGITUDE", nullable = false)
     private double longitude;
 
+    @Column(name = "DS_ENDERECO", length = 200)
     private String address;
 
-    @Column(nullable = false)
+    @Convert(converter = BooleanToNumberConverter.class)
+    @Column(name = "ST_ATIVO", nullable = false)
     private boolean active = true;
 
     public HealthUnit() { }

@@ -12,19 +12,26 @@ export default function AddMeasurementScreen({ navigation }) {
   const [date, setDate] = useState(today.toISOString().substring(0, 10));
   const [time, setTime] = useState('08:00');
   const [notes, setNotes] = useState('');
+  const [heartRate, setHeartRate] = useState('');
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
     setSaving(true);
     try {
-      await api.createMeasurement({
+      const saved = await api.createMeasurement({
         systolic: parseInt(systolic, 10),
         diastolic: parseInt(diastolic, 10),
         date,
         time,
         notes,
+        heartRate: heartRate ? parseInt(heartRate, 10) : null,
       });
-      Alert.alert('Sucesso', 'Medicao registrada!');
+      // Se a regra clinica no banco gerou alerta, ele volta na propria resposta
+      if (saved && saved.alertSeverity) {
+        Alert.alert(`Alerta ${saved.alertSeverity}`, saved.alertMessage);
+      } else {
+        Alert.alert('Sucesso', 'Medicao registrada!');
+      }
       navigation.navigate('Inicio');
     } catch (e) {
       Alert.alert('Erro', e.message || 'Nao foi possivel salvar.');
@@ -40,6 +47,9 @@ export default function AddMeasurementScreen({ navigation }) {
 
       <Text style={styles.label}>Diastolica (mmHg)</Text>
       <TextInput style={styles.input} value={diastolic} onChangeText={setDiastolic} keyboardType="numeric" />
+
+      <Text style={styles.label}>Frequencia cardiaca (bpm)</Text>
+      <TextInput style={styles.input} value={heartRate} onChangeText={setHeartRate} keyboardType="numeric" placeholder="opcional" />
 
       <Text style={styles.label}>Data (AAAA-MM-DD)</Text>
       <TextInput style={styles.input} value={date} onChangeText={setDate} />

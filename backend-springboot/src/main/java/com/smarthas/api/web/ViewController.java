@@ -35,7 +35,7 @@ public class ViewController {
         model.addAttribute("measurementCount", measurementRepository.count());
         model.addAttribute("unitCount", healthUnitRepository.count());
         model.addAttribute("recent",
-                measurementRepository.findAll(PageRequest.of(0, 8, Sort.by("id").descending())).getContent());
+                measurementRepository.findAll(PageRequest.of(0, 8, Sort.by("measuredAt").descending())).getContent());
         return "overview";
     }
 }
