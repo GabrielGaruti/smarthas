@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Regras clinicas no perfil H2 (JavaRulesGateway), que espelham os packages PL/SQL.
- * Os mesmos cenarios sao verificados no Oracle por OraclePlsqlGatewayIT.
+ * Os mesmos cenarios sao verificados no Oracle por OraclePlsqlGatewayIntegrationTest.
  */
 @SpringBootTest
 @ActiveProfiles("test")

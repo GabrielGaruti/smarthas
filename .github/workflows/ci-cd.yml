@@ -42,9 +42,9 @@ jobs:
       run:
         working-directory: backend-springboot
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
@@ -62,7 +62,7 @@ jobs:
 
       - name: Publicar relatorios e artefato
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: backend-relatorios
           path: |
@@ -82,9 +82,9 @@ jobs:
       run:
         working-directory: web-angular
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -108,7 +108,7 @@ jobs:
           grep -E "Initial total|Application bundle|main-|polyfills-|styles-" ../logs/web-build.log | head -10 >> "$GITHUB_STEP_SUMMARY" || true
           echo '```' >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: always()
         with:
           name: web-dist
@@ -136,7 +136,7 @@ jobs:
           --health-timeout 5s
           --health-retries 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Instalar o schema no Oracle (run_all.sql)
         run: |
@@ -158,7 +158,7 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
@@ -172,13 +172,18 @@ jobs:
           ORACLE_PASSWORD: ${{ env.CI_DB_PASSWORD }}
         run: |
           mvn -B verify -Dtest.groups=oracle -Dtest.excludedGroups=none 2>&1 | tee ../logs/oracle-it.log
-          exit ${PIPESTATUS[0]}
+          STATUS=${PIPESTATUS[0]}
+          # Garante que os testes Oracle realmente rodaram (um filtro errado daria "0 testes" e passaria)
+          if ! ls target/surefire-reports/TEST-*IntegrationTest.xml > /dev/null 2>&1; then
+            echo "Nenhum teste de integracao Oracle foi executado"; exit 1
+          fi
+          exit $STATUS
 
       - name: Resumo dos testes Oracle
         if: always()
         run: python ci/test-summary.py "Oracle - testes de integracao" backend-springboot/target >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: always()
         with:
           name: oracle-relatorios
@@ -217,7 +222,7 @@ jobs:
       ORACLE_PROD_PASSWORD: ${{ secrets.ORACLE_PROD_PASSWORD }}
       DEPLOY_HOOK_URL: ${{ secrets.DEPLOY_HOOK_URL }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Definir nome da imagem
         run: |
@@ -293,7 +298,7 @@ jobs:
             cat logs/smoke-report.md 2>/dev/null || echo "Smoke test nao executado."
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: always()
         with:
           name: deploy-relatorios

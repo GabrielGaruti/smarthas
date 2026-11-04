@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest
 @ActiveProfiles("oracle")
 @EnabledIfEnvironmentVariable(named = "ORACLE_URL", matches = ".+")
-class OraclePlsqlGatewayIT {
+class OraclePlsqlGatewayIntegrationTest {
 
     @Autowired ClinicalRulesGateway gateway;
     @Autowired JdbcTemplate jdbc;
