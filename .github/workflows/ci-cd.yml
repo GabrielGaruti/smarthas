@@ -1,0 +1,301 @@
+# ============================================================
+# Smart HAS - Pipeline CI/CD (Fase 7)
+#
+#  backend ............ build + testes automatizados (JUnit/MockMvc, H2) + cobertura JaCoCo
+#  web ................ build de producao do painel Angular
+#  oracle-integration . sobe um Oracle Database Free efemero, instala o schema
+#                       (tabelas, packages, triggers, carga, testes SQL) e roda os
+#                       testes de integracao Java -> JDBC -> PL/SQL
+#  deploy ............. (main ou disparo manual) imagem Docker no GHCR, deploy em
+#                       staging com Oracle + migracao do banco + smoke test;
+#                       deploy opcional em producao se os secrets existirem
+#
+# Logs e relatorios: aba "Summary" de cada execucao + artefatos para download.
+# ============================================================
+name: Smart HAS CI/CD
+
+on:
+  push:
+    branches: [main, fase7]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: "17"
+  NODE_VERSION: "20"
+  # Credenciais do banco EFEMERO do pipeline (existe so durante o job). Producao usa secrets.
+  CI_DB_USER: smarthas
+  CI_DB_PASSWORD: SmartHas_CI_2026
+  CI_DB_URL: jdbc:oracle:thin:@//localhost:1521/FREEPDB1
+
+jobs:
+  # ----------------------------------------------------------
+  backend:
+    name: Back-end - build e testes
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend-springboot
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Build, testes e cobertura (mvn verify)
+        run: |
+          mkdir -p ../logs
+          mvn -B verify 2>&1 | tee ../logs/backend-build.log
+          exit ${PIPESTATUS[0]}
+
+      - name: Resumo dos testes
+        if: always()
+        run: python ../ci/test-summary.py "Back-end - testes automatizados (H2)" target >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publicar relatorios e artefato
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-relatorios
+          path: |
+            logs/backend-build.log
+            backend-springboot/target/surefire-reports/
+            backend-springboot/target/site/jacoco/
+            backend-springboot/target/smarthas-api-*.jar
+          retention-days: 14
+
+  # ----------------------------------------------------------
+  web:
+    name: Painel Angular - build
+    runs-on: ubuntu-latest
+    env:
+      FORCE_COLOR: "0"   # log sem codigos de cor (legivel no artefato e no resumo)
+    defaults:
+      run:
+        working-directory: web-angular
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: web-angular/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Build de producao
+        run: |
+          mkdir -p ../logs
+          npx ng build --configuration production 2>&1 | tee ../logs/web-build.log
+          exit ${PIPESTATUS[0]}
+
+      - name: Resumo
+        if: always()
+        run: |
+          echo "## Painel Angular" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          grep -E "Initial total|Application bundle|main-|polyfills-|styles-" ../logs/web-build.log | head -10 >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-dist
+          path: |
+            logs/web-build.log
+            web-angular/dist/
+          retention-days: 14
+
+  # ----------------------------------------------------------
+  oracle-integration:
+    name: Oracle - deploy do schema e testes de integracao
+    runs-on: ubuntu-latest
+    services:
+      oracle:
+        image: gvenzl/oracle-free:23-slim-faststart
+        env:
+          ORACLE_PASSWORD: SmartHas_CI_2026
+          APP_USER: smarthas
+          APP_USER_PASSWORD: SmartHas_CI_2026
+        ports:
+          - 1521:1521
+        options: >-
+          --health-cmd healthcheck.sh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar o schema no Oracle (run_all.sql)
+        run: |
+          mkdir -p logs
+          docker cp database/oracle ${{ job.services.oracle.id }}:/tmp/oracle
+          docker exec -w /tmp/oracle ${{ job.services.oracle.id }} \
+            sqlplus -S -L "$CI_DB_USER/$CI_DB_PASSWORD@//localhost:1521/FREEPDB1" @run_all.sql \
+            2>&1 | tee logs/oracle-install.log
+          exit ${PIPESTATUS[0]}
+
+      - name: Resumo da instalacao
+        if: always()
+        run: |
+          {
+            echo "## Oracle - instalacao do schema"
+            echo ""
+            echo '```'
+            grep -E "^=====|Objetos PL/SQL validos|alerta\(s\) gerado|leituras importadas|Relatorios gerados|Esperado|concluida" logs/oracle-install.log || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Testes de integracao Java -> JDBC -> PL/SQL
+        working-directory: backend-springboot
+        env:
+          ORACLE_URL: ${{ env.CI_DB_URL }}
+          ORACLE_USER: ${{ env.CI_DB_USER }}
+          ORACLE_PASSWORD: ${{ env.CI_DB_PASSWORD }}
+        run: |
+          mvn -B verify -Dtest.groups=oracle -Dtest.excludedGroups=none 2>&1 | tee ../logs/oracle-it.log
+          exit ${PIPESTATUS[0]}
+
+      - name: Resumo dos testes Oracle
+        if: always()
+        run: python ci/test-summary.py "Oracle - testes de integracao" backend-springboot/target >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: oracle-relatorios
+          path: |
+            logs/
+            backend-springboot/target/surefire-reports/
+          retention-days: 14
+
+  # ----------------------------------------------------------
+  deploy:
+    name: Deploy - imagem Docker, banco e smoke test
+    needs: [backend, web, oracle-integration]
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    environment: staging
+    permissions:
+      contents: read
+      packages: write
+    services:
+      oracle:
+        image: gvenzl/oracle-free:23-slim-faststart
+        env:
+          ORACLE_PASSWORD: SmartHas_CI_2026
+          APP_USER: smarthas
+          APP_USER_PASSWORD: SmartHas_CI_2026
+        ports:
+          - 1521:1521
+        options: >-
+          --health-cmd healthcheck.sh
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 30
+    env:
+      ORACLE_PROD_URL: ${{ secrets.ORACLE_PROD_URL }}
+      ORACLE_PROD_USER: ${{ secrets.ORACLE_PROD_USER }}
+      ORACLE_PROD_PASSWORD: ${{ secrets.ORACLE_PROD_PASSWORD }}
+      DEPLOY_HOOK_URL: ${{ secrets.DEPLOY_HOOK_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Definir nome da imagem
+        run: |
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          echo "IMAGE=ghcr.io/$OWNER/smarthas-api" >> "$GITHUB_ENV"
+          echo "TAG=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+
+      - name: Migracao do banco de staging (run_all.sql)
+        run: |
+          set +e
+          mkdir -p logs
+          docker cp database/oracle ${{ job.services.oracle.id }}:/tmp/oracle
+          docker exec -w /tmp/oracle ${{ job.services.oracle.id }} \
+            sqlplus -S -L "$CI_DB_USER/$CI_DB_PASSWORD@//localhost:1521/FREEPDB1" @run_all.sql \
+            > logs/staging-db.log 2>&1
+          STATUS=$?
+          tail -5 logs/staging-db.log
+          exit $STATUS
+
+      - name: Build da imagem Docker
+        run: docker build -t "$IMAGE:$TAG" -t "$IMAGE:latest" backend-springboot
+
+      - name: Publicar imagem no GitHub Container Registry
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker push "$IMAGE:$TAG"
+          docker push "$IMAGE:latest"
+
+      - name: Subir a API em staging (perfil oracle)
+        run: |
+          docker run -d --name smarthas-api --network host \
+            -e SPRING_PROFILES_ACTIVE=oracle \
+            -e ORACLE_URL="$CI_DB_URL" -e ORACLE_USER="$CI_DB_USER" -e ORACLE_PASSWORD="$CI_DB_PASSWORD" \
+            -e SMARTHAS_JWT_SECRET="${{ github.run_id }}-${{ github.sha }}-chave-de-staging-do-pipeline" \
+            "$IMAGE:$TAG"
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:8080/health > /dev/null; then echo "API no ar apos $((i * 2))s"; exit 0; fi
+            sleep 2
+          done
+          echo "API nao respondeu"; docker logs smarthas-api; exit 1
+
+      - name: Smoke test pos-deploy
+        run: |
+          chmod +x ci/smoke-test.sh
+          ci/smoke-test.sh http://localhost:8080 logs/smoke-report.md
+
+      - name: Deploy PL/SQL em producao (opcional, requer secrets ORACLE_PROD_*)
+        if: env.ORACLE_PROD_URL != ''
+        run: |
+          docker exec -w /tmp/oracle ${{ job.services.oracle.id }} \
+            sqlplus -S -L "$ORACLE_PROD_USER/$ORACLE_PROD_PASSWORD@$ORACLE_PROD_URL" @deploy_plsql.sql \
+            2>&1 | tee logs/producao-plsql.log
+          exit ${PIPESTATUS[0]}
+
+      - name: Disparar deploy da API em producao (opcional, requer secret DEPLOY_HOOK_URL)
+        if: env.DEPLOY_HOOK_URL != ''
+        run: curl -sf -X POST "$DEPLOY_HOOK_URL" && echo "Deploy de producao disparado."
+
+      - name: Relatorio do deploy
+        if: always()
+        run: |
+          docker logs smarthas-api > logs/api-staging.log 2>&1 || true
+          {
+            echo "## Deploy"
+            echo ""
+            echo "| Item | Valor |"
+            echo "|---|---|"
+            echo "| Imagem | \`$IMAGE:$TAG\` |"
+            echo "| Ambiente | staging (Oracle Database Free + API em container) |"
+            echo "| Banco de producao (PL/SQL) | $([ -n "$ORACLE_PROD_URL" ] && echo 'deploy executado' || echo 'nao configurado') |"
+            echo "| API de producao | $([ -n "$DEPLOY_HOOK_URL" ] && echo 'deploy disparado' || echo 'nao configurado') |"
+            echo ""
+            cat logs/smoke-report.md 2>/dev/null || echo "Smoke test nao executado."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deploy-relatorios
+          path: logs/
+          retention-days: 14

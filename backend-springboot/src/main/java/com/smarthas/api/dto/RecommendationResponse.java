@@ -15,8 +15,8 @@ public record RecommendationResponse(
         String riskLevel,          // BAIXO, MODERADO, ALTO
         List<String> recommendations,
         HealthUnitResponse nearestUnit,
-        Double controlRate30d,     // FN_SHAS_TAXA_CONTROLE
-        String patientSummary,     // FN_SHAS_RESUMO_PACIENTE
+        Double controlRate30d,     // PKG_SHAS_INDICADORES.FN_TAXA_CONTROLE
+        String patientSummary,     // PKG_SHAS_INDICADORES.FN_RESUMO_PACIENTE
         long openAlerts,
         String rulesEngine         // ORACLE_PLSQL ou JAVA_FALLBACK
 ) { }

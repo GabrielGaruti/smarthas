@@ -44,7 +44,7 @@ public class MeasurementController {
     }
 
     @Operation(summary = "Cria uma nova medicao",
-               description = "Apos gravar, o evento de back-end aciona a procedure PRC_SHAS_REGISTRAR_ALERTA. "
+               description = "Apos gravar, o evento de back-end aciona a procedure PKG_SHAS_ALERTAS.PRC_REGISTRAR_ALERTA. "
                            + "Se a leitura gerar alerta, ele volta em alertSeverity/alertMessage.")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping

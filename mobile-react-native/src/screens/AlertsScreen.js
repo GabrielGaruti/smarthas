@@ -5,7 +5,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { api } from '../api/client';
 
-// Fase 6: lista os alertas clinicos gerados no banco (PRC_SHAS_REGISTRAR_ALERTA).
+// Fase 6: lista os alertas clinicos gerados no banco (PKG_SHAS_ALERTAS.PRC_REGISTRAR_ALERTA).
 export default function AlertsScreen() {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);

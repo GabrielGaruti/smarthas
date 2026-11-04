@@ -1,12 +1,15 @@
 -- ============================================================
--- Smart HAS - Fase 6 | 04_carga_dados.sql
+-- Smart HAS - Fase 7 | 07_carga_dados.sql
 -- Carga de dados simulados: usuarios, unidades, dispositivos IoT,
 -- leituras manuais e leituras de sensor (via procedure).
 -- As datas sao relativas a SYSDATE para que os indicadores dos
 -- "ultimos 30 dias" sempre tenham dados na demonstracao.
--- Pre-requisito: 01, 02 e 03 executados.
+-- Pre-requisito: scripts 01 a 06 executados (tabelas, packages e triggers).
+-- As triggers ja atuam durante a carga: cada alerta gerado e auditado e as
+-- leituras de sensor atualizam a data de sincronizacao do dispositivo.
 -- ============================================================
 SET SERVEROUTPUT ON;
+SET DEFINE OFF;
 
 -- ---------- Usuarios (senhas em BCrypt, as mesmas da API) ----------
 -- admin@smarthas.com / admin123   |   demais usuarios / 123456
@@ -94,7 +97,7 @@ DECLARE
   v_gerados   PLS_INTEGER := 0;
 BEGIN
   FOR m IN (SELECT ID_MEDICAO FROM T_SHAS_MEDICAO ORDER BY DT_MEDICAO) LOOP
-    PRC_SHAS_REGISTRAR_ALERTA(m.ID_MEDICAO, v_id_alerta, v_sev);
+    PKG_SHAS_ALERTAS.PRC_REGISTRAR_ALERTA(m.ID_MEDICAO, v_id_alerta, v_sev);
     IF v_id_alerta IS NOT NULL THEN
       v_gerados := v_gerados + 1;
     END IF;
@@ -109,7 +112,7 @@ DECLARE
   v_qtd NUMBER;
 BEGIN
   FOR d IN (SELECT ID_DISPOSITIVO, CD_SERIE FROM T_SHAS_DISPOSITIVO WHERE ST_ATIVO = 1 ORDER BY ID_DISPOSITIVO) LOOP
-    PRC_SHAS_SIMULAR_LEITURAS_SENSOR(d.ID_DISPOSITIVO, 8, 30, v_qtd);
+    PKG_SHAS_ALERTAS.PRC_SIMULAR_LEITURAS_SENSOR(d.ID_DISPOSITIVO, 8, 30, v_qtd);
     DBMS_OUTPUT.PUT_LINE(d.CD_SERIE || ': ' || v_qtd || ' leituras importadas.');
   END LOOP;
 END;
@@ -120,4 +123,5 @@ SELECT 'USUARIOS' TABELA, COUNT(*) QTD FROM T_SHAS_USUARIO UNION ALL
 SELECT 'UNIDADES',  COUNT(*) FROM T_SHAS_UNIDADE_SAUDE UNION ALL
 SELECT 'DISPOSITIVOS', COUNT(*) FROM T_SHAS_DISPOSITIVO UNION ALL
 SELECT 'MEDICOES',  COUNT(*) FROM T_SHAS_MEDICAO UNION ALL
-SELECT 'ALERTAS',   COUNT(*) FROM T_SHAS_ALERTA;
+SELECT 'ALERTAS',   COUNT(*) FROM T_SHAS_ALERTA UNION ALL
+SELECT 'AUDITORIA_ALERTA', COUNT(*) FROM T_SHAS_AUDITORIA_ALERTA;

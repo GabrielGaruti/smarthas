@@ -6,7 +6,7 @@ import java.time.LocalDate;
 
 /**
  * Relatorio resumido por paciente. Tabela Oracle: T_SHAS_RELATORIO_RESUMO.
- * No perfil "oracle" e gerado pela procedure PRC_SHAS_GERAR_RELATORIO_RESUMO.
+ * No perfil "oracle" e gerado pela procedure PKG_SHAS_RELATORIOS.PRC_GERAR_RELATORIO_RESUMO.
  */
 @Entity
 @Table(name = "T_SHAS_RELATORIO_RESUMO")

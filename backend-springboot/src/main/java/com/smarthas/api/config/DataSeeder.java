@@ -75,7 +75,7 @@ public class DataSeeder implements CommandLineRunner {
         seeded.add(manual(joao, 3, "20:00", 184, 118, "Tontura e visao turva"));
         seeded.add(manual(ana, 6, "10:00", 132, 85, null));
         seeded.add(manual(ana, 2, "10:30", 126, 82, null));
-        // leituras "de sensor" (no Oracle sao geradas por PRC_SHAS_SIMULAR_LEITURAS_SENSOR)
+        // leituras "de sensor" (no Oracle sao geradas por PKG_SHAS_ALERTAS.PRC_SIMULAR_LEITURAS_SENSOR)
         seeded.add(sensor(paciente, 11, "06:45", 134, 86, 74));
         seeded.add(sensor(paciente, 5, "06:50", 147, 93, 81));
         seeded.add(sensor(maria, 3, "07:30", 112, 72, 66));

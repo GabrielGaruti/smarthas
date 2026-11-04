@@ -4,8 +4,7 @@ import com.smarthas.api.domain.SummaryReport;
 import com.smarthas.api.domain.User;
 import com.smarthas.api.dto.ReportRunResponse;
 import com.smarthas.api.dto.SummaryReportResponse;
-import com.smarthas.api.integration.ClinicalRulesGateway;
-import com.smarthas.api.integration.PatientIndicator;
+import com.smarthas.api.integration.*;
 import com.smarthas.api.repository.SummaryReportRepository;
 import com.smarthas.api.repository.UserRepository;
 import com.smarthas.api.web.ApiException;
@@ -17,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/** Orquestra a geracao e a leitura dos relatorios consolidados. */
+/** Orquestra relatorios consolidados, indicadores e consultas dinamicas do painel. */
 @Service
 public class ReportService {
 
@@ -54,5 +53,21 @@ public class ReportService {
 
     public List<PatientIndicator> indicators(int days) {
         return gateway.patientIndicators(days);
+    }
+
+    public MeasurementSearchResult search(MeasurementSearchFilter filter) {
+        return gateway.searchMeasurements(filter);
+    }
+
+    public List<DimensionStat> stats(String dimension, int days) {
+        return gateway.statsByDimension(dimension, days);
+    }
+
+    public int resolvePatientAlerts(Long userId) {
+        return gateway.resolvePatientAlerts(userId);
+    }
+
+    public List<AlertAuditEntry> alertAudit(Long alertId) {
+        return gateway.alertAudit(alertId);
     }
 }

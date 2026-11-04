@@ -8,9 +8,9 @@ import {
 
 /**
  * Fase 6 - Tela administrativa ligada a camada Oracle:
- *  - Indicadores por paciente: functions FN_SHAS_TAXA_CONTROLE / FN_SHAS_RESUMO_PACIENTE
- *  - Relatorio: botao executa PRC_SHAS_GERAR_RELATORIO_RESUMO (Angular -> REST -> Java -> JDBC -> Oracle)
- *  - Alertas: registros gerados por PRC_SHAS_REGISTRAR_ALERTA
+ *  - Indicadores por paciente: functions PKG_SHAS_INDICADORES.FN_TAXA_CONTROLE / PKG_SHAS_INDICADORES.FN_RESUMO_PACIENTE
+ *  - Relatorio: botao executa PKG_SHAS_RELATORIOS.PRC_GERAR_RELATORIO_RESUMO (Angular -> REST -> Java -> JDBC -> Oracle)
+ *  - Alertas: registros gerados por PKG_SHAS_ALERTAS.PRC_REGISTRAR_ALERTA
  */
 @Component({
   selector: 'app-clinical',
@@ -31,7 +31,7 @@ import {
           </div>
         </div>
         <table>
-          <thead><tr><th>Paciente</th><th>Na meta</th><th>Resumo (FN_SHAS_RESUMO_PACIENTE)</th></tr></thead>
+          <thead><tr><th>Paciente</th><th>Na meta</th><th>Resumo (PKG_SHAS_INDICADORES.FN_RESUMO_PACIENTE)</th></tr></thead>
           <tbody>
             <tr *ngFor="let p of indicators">
               <td>{{ p.fullName }}</td>
