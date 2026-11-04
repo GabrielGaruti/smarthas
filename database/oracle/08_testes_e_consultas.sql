@@ -49,10 +49,12 @@ DECLARE
   v_id_medicao NUMBER;
   v_id_alerta  NUMBER;
   v_sev        VARCHAR2(10);
+  v_usu        NUMBER;
 BEGIN
+  -- RETURNING nao e permitido em INSERT ... SELECT: busca o paciente antes
+  SELECT ID_USUARIO INTO v_usu FROM T_SHAS_USUARIO WHERE DS_EMAIL = 'paciente@smarthas.com';
   INSERT INTO T_SHAS_MEDICAO (ID_USUARIO, VL_SISTOLICA, VL_DIASTOLICA, DT_MEDICAO, DS_OBSERVACAO)
-  SELECT ID_USUARIO, 186, 121, CAST(SYSTIMESTAMP AS TIMESTAMP), 'Teste de crise hipertensiva'
-    FROM T_SHAS_USUARIO WHERE DS_EMAIL = 'paciente@smarthas.com'
+  VALUES (v_usu, 186, 121, CAST(SYSTIMESTAMP AS TIMESTAMP), 'Teste de crise hipertensiva')
   RETURNING ID_MEDICAO INTO v_id_medicao;
 
   PKG_SHAS_ALERTAS.PRC_REGISTRAR_ALERTA(v_id_medicao, v_id_alerta, v_sev);
