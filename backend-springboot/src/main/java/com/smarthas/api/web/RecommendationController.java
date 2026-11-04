@@ -39,7 +39,7 @@ public class RecommendationController {
         this.alertRepository = alertRepository;
     }
 
-    @Operation(summary = "Gera recomendacoes, nivel de risco e indicadores (FN_SHAS_TAXA_CONTROLE / FN_SHAS_RESUMO_PACIENTE)")
+    @Operation(summary = "Gera recomendacoes, nivel de risco e indicadores (PKG_SHAS_INDICADORES.FN_TAXA_CONTROLE / PKG_SHAS_INDICADORES.FN_RESUMO_PACIENTE)")
     @GetMapping
     public RecommendationResponse recommendations(
             @AuthenticationPrincipal AppUserDetails principal,

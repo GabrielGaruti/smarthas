@@ -21,14 +21,18 @@ public enum Classification {
     public String getLabel() { return label; }
     public String getColorHex() { return colorHex; }
 
-    /** Classifica uma medicao a partir dos valores sistolico/diastolico. */
+    /**
+     * Classifica uma medicao a partir dos valores sistolico/diastolico.
+     * Fase 7: a faixa de hipertensao (>= 140 ou >= 90) passou a ser testada primeiro. Antes, 141x85
+     * caia em "Elevada" porque a diastolica 80-89 era avaliada antes (bug apontado pelos testes).
+     */
     public static Classification of(int systolic, int diastolic) {
-        if (systolic < 120 && diastolic < 80) {
-            return NORMAL;
-        } else if ((systolic >= 120 && systolic <= 139) || (diastolic >= 80 && diastolic <= 89)) {
+        if (systolic >= 140 || diastolic >= 90) {
+            return HYPERTENSION;
+        } else if (systolic >= 120 || diastolic >= 80) {
             return ELEVATED;
         } else {
-            return HYPERTENSION;
+            return NORMAL;
         }
     }
 }

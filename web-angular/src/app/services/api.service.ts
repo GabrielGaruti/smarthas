@@ -38,8 +38,8 @@ export interface Recommendation {
   riskLevel: string;
   recommendations: string[];
   nearestUnit?: HealthUnit;
-  controlRate30d?: number | null;  // FN_SHAS_TAXA_CONTROLE
-  patientSummary?: string;         // FN_SHAS_RESUMO_PACIENTE
+  controlRate30d?: number | null;  // PKG_SHAS_INDICADORES.FN_TAXA_CONTROLE
+  patientSummary?: string;         // PKG_SHAS_INDICADORES.FN_RESUMO_PACIENTE
   openAlerts: number;
   rulesEngine: string;             // ORACLE_PLSQL | JAVA_FALLBACK
 }

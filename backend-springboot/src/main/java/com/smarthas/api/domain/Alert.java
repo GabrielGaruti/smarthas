@@ -5,7 +5,7 @@ import java.time.Instant;
 
 /**
  * Alerta clinico. Tabela Oracle: T_SHAS_ALERTA.
- * No perfil "oracle" os registros sao criados pela procedure PRC_SHAS_REGISTRAR_ALERTA;
+ * No perfil "oracle" os registros sao criados pela procedure PKG_SHAS_ALERTAS.PRC_REGISTRAR_ALERTA;
  * a API apenas le e atualiza o status (resolver).
  */
 @Entity

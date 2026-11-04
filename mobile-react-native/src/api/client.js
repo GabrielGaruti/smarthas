@@ -51,7 +51,7 @@ export const api = {
 
   getRecommendations: () => request('/recommendations'),
 
-  // Fase 6: alertas gerados pela procedure Oracle PRC_SHAS_REGISTRAR_ALERTA
+  // Fase 6: alertas gerados pela procedure Oracle PKG_SHAS_ALERTAS.PRC_REGISTRAR_ALERTA
   getAlerts: () => request('/alerts'),
 
   resolveAlert: (id) => request(`/alerts/${id}/resolve`, { method: 'PATCH' }),

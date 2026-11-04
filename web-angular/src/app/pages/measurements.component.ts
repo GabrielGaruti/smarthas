@@ -98,7 +98,7 @@ export class MeasurementsComponent implements OnInit {
     this.lastAlert = null;
     this.api.createMeasurement(this.form).subscribe({
       next: (m) => {
-        // alerta gerado no back-end pela procedure PRC_SHAS_REGISTRAR_ALERTA
+        // alerta gerado no back-end pela procedure PKG_SHAS_ALERTAS.PRC_REGISTRAR_ALERTA
         if (m.alertSeverity && m.alertMessage) {
           this.lastAlert = { severity: m.alertSeverity, message: m.alertMessage };
         }

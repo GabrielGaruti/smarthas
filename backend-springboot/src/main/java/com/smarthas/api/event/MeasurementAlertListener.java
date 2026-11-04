@@ -11,7 +11,7 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
- * Evento de back-end que aciona a procedure PRC_SHAS_REGISTRAR_ALERTA.
+ * Evento de back-end que aciona a procedure PKG_SHAS_ALERTAS.PRC_REGISTRAR_ALERTA.
  *
  * Fluxo: POST /measurements (REST) -> MeasurementService grava e publica o evento
  *        -> apos o COMMIT este listener chama o gateway (JDBC) -> procedure Oracle.

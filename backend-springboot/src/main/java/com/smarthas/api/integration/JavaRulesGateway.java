@@ -18,7 +18,7 @@ import java.util.*;
 
 /**
  * Adaptador de contingencia (perfil padrao, banco H2).
- * Reproduz em Java exatamente as regras das procedures/functions PL/SQL,
+ * Reproduz em Java exatamente as regras dos packages PL/SQL (PKG_SHAS_*),
  * para que o sistema rode e seja testado sem acesso ao Oracle.
  */
 @Component
@@ -40,7 +40,7 @@ public class JavaRulesGateway implements ClinicalRulesGateway {
         this.users = users;
     }
 
-    /** Espelho de PRC_SHAS_REGISTRAR_ALERTA. */
+    /** Espelho de PKG_SHAS_ALERTAS.PRC_REGISTRAR_ALERTA. */
     @Override
     @Transactional
     public AlertOutcome registerAlert(Long measurementId) {
@@ -82,7 +82,7 @@ public class JavaRulesGateway implements ClinicalRulesGateway {
         return new AlertOutcome(alert.getId(), severity);
     }
 
-    /** Espelho de PRC_SHAS_GERAR_RELATORIO_RESUMO. */
+    /** Espelho de PKG_SHAS_RELATORIOS.PRC_GERAR_RELATORIO_RESUMO. */
     @Override
     @Transactional
     public int generateSummaryReports(int days, Long userId) {
@@ -113,7 +113,7 @@ public class JavaRulesGateway implements ClinicalRulesGateway {
         return generated;
     }
 
-    /** Espelho de FN_SHAS_TAXA_CONTROLE. */
+    /** Espelho de PKG_SHAS_INDICADORES.FN_TAXA_CONTROLE. */
     @Override
     public Double controlRate(Long userId, int days) {
         validateDays(days, Integer.MAX_VALUE);
@@ -124,7 +124,7 @@ public class JavaRulesGateway implements ClinicalRulesGateway {
         return round1(ok * 100.0 / period.size());
     }
 
-    /** Espelho de FN_SHAS_RESUMO_PACIENTE. */
+    /** Espelho de PKG_SHAS_INDICADORES.FN_RESUMO_PACIENTE. */
     @Override
     public String patientSummary(Long userId, int days) {
         validateDays(days, Integer.MAX_VALUE);
@@ -158,6 +158,108 @@ public class JavaRulesGateway implements ClinicalRulesGateway {
         return list;
     }
 
+    /** Espelho de PKG_SHAS_INDICADORES.PRC_CONSULTAR_MEDICOES (mesmas validacoes e whitelist). */
+    @Override
+    @Transactional(readOnly = true)
+    public MeasurementSearchResult searchMeasurements(MeasurementSearchFilter f) {
+        String classification = upper(f.classification());
+        String source = upper(f.source());
+        if (classification != null && !Set.of("NORMAL", "ELEVATED", "HYPERTENSION").contains(classification)) {
+            throw badRequest("Classificacao invalida: use NORMAL, ELEVATED ou HYPERTENSION.");
+        }
+        if (source != null && !Set.of("MANUAL", "SENSOR").contains(source)) {
+            throw badRequest("Origem invalida: use MANUAL ou SENSOR.");
+        }
+        if (f.days() != null) validateDays(f.days(), Integer.MAX_VALUE);
+        if (f.limit() < 1 || f.limit() > 500) throw badRequest("Limite deve estar entre 1 e 500.");
+
+        String orderBy = f.orderBy() == null ? "DATA" : f.orderBy().toUpperCase();
+        String direction = f.direction() == null ? "DESC" : f.direction().toUpperCase();
+        Comparator<MeasurementSearchRow> order = switch (orderBy) {
+            case "DATA" -> Comparator.comparing(MeasurementSearchRow::measuredAt);
+            case "SISTOLICA" -> Comparator.comparingInt(MeasurementSearchRow::systolic);
+            case "DIASTOLICA" -> Comparator.comparingInt(MeasurementSearchRow::diastolic);
+            case "PACIENTE" -> Comparator.comparing(MeasurementSearchRow::patientName);
+            default -> null;
+        };
+        if (order == null || !Set.of("ASC", "DESC").contains(direction)) {
+            throw badRequest("Ordenacao invalida: campo DATA/SISTOLICA/DIASTOLICA/PACIENTE e direcao ASC/DESC.");
+        }
+        if (direction.equals("DESC")) order = order.reversed();
+        order = order.thenComparing(MeasurementSearchRow::id, Comparator.reverseOrder());
+
+        LocalDateTime from = f.days() == null ? null : LocalDateTime.now().minusDays(f.days());
+        List<MeasurementSearchRow> matches = measurements.findAll().stream()
+                .filter(m -> f.userId() == null || f.userId().equals(m.getUser().getId()))
+                .filter(m -> classification == null || m.getClassification().name().equals(classification))
+                .filter(m -> source == null || source.equals(m.getSource()))
+                .filter(m -> from == null || !m.getMeasuredAt().isBefore(from))
+                .filter(m -> f.minSystolic() == null || m.getSystolic() >= f.minSystolic())
+                .map(m -> new MeasurementSearchRow(m.getId(), m.getUser().getId(), m.getUser().getFullName(),
+                        m.getSystolic(), m.getDiastolic(), m.getHeartRate(), m.getMeasuredAt(), m.getSource(),
+                        m.getClassification().name()))
+                .sorted(order)
+                .toList();
+
+        String description = "Filtro em Java (perfil H2): usuario=" + star(f.userId()) + " classif=" + star(classification)
+                + " origem=" + star(source) + " dias=" + star(f.days()) + " sis_min=" + star(f.minSystolic())
+                + " ordem=" + orderBy + " " + direction + " limite=" + f.limit();
+        return new MeasurementSearchResult(engine(), matches.size(), description,
+                matches.subList(0, Math.min(f.limit(), matches.size())));
+    }
+
+    /** Espelho de PKG_SHAS_INDICADORES.FN_ESTATISTICA_POR_DIMENSAO. */
+    @Override
+    @Transactional(readOnly = true)
+    public List<DimensionStat> statsByDimension(String dimension, int days) {
+        validateDays(days, Integer.MAX_VALUE);
+        String dim = dimension == null ? "" : dimension.trim().toUpperCase();
+        java.util.function.Function<Measurement, String> key = switch (dim) {
+            case "CLASSIFICACAO" -> m -> m.getClassification().getLabel();
+            case "ORIGEM" -> Measurement::getSource;
+            case "PACIENTE" -> m -> m.getUser().getFullName();
+            case "PERIODO_DIA" -> m -> m.getMeasuredAt().getHour() < 12 ? "Manha"
+                    : m.getMeasuredAt().getHour() < 18 ? "Tarde" : "Noite";
+            default -> throw badRequest("Dimensao invalida: use CLASSIFICACAO, ORIGEM, PACIENTE ou PERIODO_DIA.");
+        };
+        LocalDateTime from = LocalDateTime.now().minusDays(days);
+        Map<String, List<Measurement>> groups = new TreeMap<>();
+        measurements.findAll().stream()
+                .filter(m -> !m.getMeasuredAt().isBefore(from))
+                .forEach(m -> groups.computeIfAbsent(key.apply(m), k -> new ArrayList<>()).add(m));
+
+        List<DimensionStat> stats = new ArrayList<>();
+        groups.forEach((group, list) -> {
+            long ok = list.stream().filter(m -> m.getSystolic() < 140 && m.getDiastolic() < 90).count();
+            stats.add(new DimensionStat(group, list.size(),
+                    round1(list.stream().mapToInt(Measurement::getSystolic).average().orElse(0)),
+                    round1(list.stream().mapToInt(Measurement::getDiastolic).average().orElse(0)),
+                    round1(ok * 100.0 / list.size())));
+        });
+        stats.sort(Comparator.comparingLong(DimensionStat::measurements).reversed()
+                .thenComparing(DimensionStat::group));
+        return stats;
+    }
+
+    /** Espelho de PKG_SHAS_ALERTAS.PRC_RESOLVER_ALERTAS_PACIENTE. */
+    @Override
+    @Transactional
+    public int resolvePatientAlerts(Long userId) {
+        ensureUser(userId);
+        List<Alert> open = alerts.findByUserIdOrderByCreatedAtDesc(userId).stream()
+                .filter(a -> Alert.STATUS_OPEN.equals(a.getStatus()))
+                .toList();
+        open.forEach(Alert::resolve);
+        alerts.saveAll(open);
+        return open.size();
+    }
+
+    /** A trilha de auditoria e gravada por trigger Oracle; no H2 nao ha triggers. */
+    @Override
+    public List<AlertAuditEntry> alertAudit(Long alertId) {
+        return List.of();
+    }
+
     @Override
     public String engine() {
         return "JAVA_FALLBACK";
@@ -179,6 +281,18 @@ public class JavaRulesGateway implements ClinicalRulesGateway {
             throw new ApiException("Periodo invalido: informe entre 1 e " + Math.min(max, 365) + " dias.",
                     HttpStatus.BAD_REQUEST);
         }
+    }
+
+    private static ApiException badRequest(String message) {
+        return new ApiException(message, HttpStatus.BAD_REQUEST);
+    }
+
+    private static String upper(String s) {
+        return s == null || s.isBlank() ? null : s.trim().toUpperCase();
+    }
+
+    private static String star(Object v) {
+        return v == null ? "*" : v.toString();
     }
 
     private static Double round1(double v) {

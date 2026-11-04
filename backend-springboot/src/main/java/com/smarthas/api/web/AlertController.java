@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "Alertas", description = "Alertas clinicos gerados pela procedure PRC_SHAS_REGISTRAR_ALERTA")
+@Tag(name = "Alertas", description = "Alertas clinicos gerados pela procedure PKG_SHAS_ALERTAS.PRC_REGISTRAR_ALERTA")
 @SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/alerts")
