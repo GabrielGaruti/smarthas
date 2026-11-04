@@ -109,6 +109,9 @@ npx expo start
 > Ajuste a constante `API_URL` em `src/api/client.js` conforme o ambiente
 > (emulador Android: `10.0.2.2`; celular físico: IP da sua máquina na rede).
 
+## Vídeo de demonstração
+https://youtu.be/1oKfmJUCh9Y
+
 ## Integrantes do grupo
 - Gabriel Garuti Paiva Cracco — RM 554866
 - Vitor Cremonezi Morija — RM 550998
